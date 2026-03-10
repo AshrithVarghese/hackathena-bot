@@ -382,5 +382,10 @@ bot.catch((err, ctx) => console.error(`[Bot Error for ${ctx.updateType}]`, err))
 
 bot.launch().then(() => console.log("🚀 Hackathon Bot is running!"));
 
+import express from "express";
+const app = express();
+app.get("/", (req, res) => res.send("Hackathon Bot is running!"));
+app.listen(process.env.PORT || 3000, () => console.log("Dummy server listening on port 3000"));
+
 process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));
