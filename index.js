@@ -145,7 +145,18 @@ bot.on("text", async (ctx, next) => {
             const { error } = await supabase.from("helpers").insert({ name: s.name, password: s.pass, upi_id: text, telegram_id: uid });
             ctx.session = null;
             if (error) return ctx.reply("❌ Registration failed. You might already be registered.", mainMenu);
-            return ctx.reply("✅ Helper registered successfully!", helperMenu);
+            
+            // 1. Send the success message and their persistent bottom menu
+            await ctx.reply("✅ Helper registered successfully!", helperMenu);
+            
+            // 2. Send the Invite Links as inline buttons so they can join immediately
+            return ctx.reply("Welcome to the team! 🦸‍♂️\n\nPlease join the volunteer operation groups below so you can start receiving tasks:\n\nHelp request will be shared in the Help Group and food bookings will be shared in the Shop Group.\nSo join both the groups without fail!", {
+                parse_mode: "Markdown",
+                ...Markup.inlineKeyboard([
+                    [Markup.button.url("🚨 Join Help Group", process.env.HELP_GROUP_LINK)],
+                    [Markup.button.url("🛒 Join Shop Group", process.env.SHOP_GROUP_LINK)]
+                ])
+            });
         }
 
         if (s.step === "help_desc") {
