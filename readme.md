@@ -34,7 +34,7 @@ The system relies on four relational tables:
 
 **1. Clone the repository**
 ```bash
-git clone [https://github.com/yourusername/hackathon-bot.git](https://github.com/yourusername/hackathon-bot.git)
+git clone https://github.com/AshrithVarghese/hackathena-bot.git
 cd hackathon-bot
 ```
 
@@ -42,8 +42,61 @@ cd hackathon-bot
 ```bash
 npm install express telegraf @supabase/supabase-js dotenv
 ```
+**3. Create Supabase DB**
+```
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-**3. Configure Environment Variables**
+-- 1. Teams Table
+CREATE TABLE teams (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    team_name TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    telegram_id BIGINT UNIQUE
+);
+
+-- 2. Helpers Table
+CREATE TABLE helpers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    telegram_id BIGINT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    upi_id TEXT NOT NULL,
+    help_completed INTEGER DEFAULT 0,
+    orders_delivered INTEGER DEFAULT 0
+);
+
+-- 3. Requests Table (Handles both Help issues and Snack Orders)
+CREATE TABLE requests (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    type TEXT CHECK (type IN ('help', 'order')) NOT NULL,
+    team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
+    assigned_helper UUID REFERENCES helpers(id) ON DELETE SET NULL,
+    status TEXT DEFAULT 'pending',
+    description TEXT,
+    item TEXT,
+    amount INTEGER,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+-- 4. Snacks Table (Dynamic Menu)
+CREATE TABLE snacks (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    price INTEGER NOT NULL,
+    is_available BOOLEAN DEFAULT TRUE
+);
+
+-- 5. Insert some default Hackathon Snacks to get you started!
+INSERT INTO snacks (name, price, is_available) VALUES
+('Coffee', 20, true),
+('Sandwich', 40, true),
+('Juice', 30, true),
+('Red Bull', 100, true),
+('Maggi', 30, true);
+```
+
+**4. Configure Environment Variables**
 Create a `.env` file in the root directory and add the following:
 ```env
 BOT_TOKEN=your_telegram_bot_token
@@ -53,7 +106,7 @@ HELP_GROUP_ID=-100XXXXXXXXXX
 SHOP_GROUP_ID=-100XXXXXXXXXX
 ```
 
-**4. Run the Bot**
+**5. Run the Bot**
 ```bash
 node index.js
 ```
