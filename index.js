@@ -139,22 +139,33 @@ bot.on("text", async (ctx, next) => {
             return ctx.reply("✅ Team registered successfully!", mainMenu);
         }
 
-        if (s.step === "helper_name") { s.name = text; s.step = "helper_pass"; return ctx.reply("Create a password:"); }
-        if (s.step === "helper_pass") { s.pass = text; s.step = "helper_upi"; return ctx.reply("Enter your UPI ID:"); }
-        if (s.step === "helper_upi") {
-            const { error } = await supabase.from("helpers").insert({ name: s.name, password: s.pass, upi_id: text, telegram_id: uid });
+        // --- HELPER REGISTRATION ---
+        if (s.step === "helper_name") { 
+            s.name = text; 
+            s.step = "helper_pass"; 
+            return ctx.reply("Create a password:"); 
+        }
+        if (s.step === "helper_pass") { 
+            // We automatically pass "NA" for the upi_id so the database stays happy!
+            const { error } = await supabase.from("helpers").insert({ 
+                name: s.name, 
+                password: text, 
+                upi_id: "NA", 
+                telegram_id: uid 
+            });
+            
             ctx.session = null;
+            
             if (error) return ctx.reply("❌ Registration failed. You might already be registered.", mainMenu);
             
-            // 1. Send the success message and their persistent bottom menu
             await ctx.reply("✅ Helper registered successfully!", helperMenu);
             
-            // 2. Send the Invite Links as inline buttons so they can join immediately
-            return ctx.reply("Welcome to the team! 🦸‍♂️\n\nPlease join the volunteer operation groups below so you can start receiving tasks:\n\nHelp request will be shared in the Help Group and food bookings will be shared in the Shop Group.\nSo join both the groups without fail!", {
+            const helpLink = process.env.HELP_GROUP_LINK || "https://telegram.org";
+            
+            return ctx.reply("Welcome to the team! 🦸‍♂️\n\nPlease join the volunteer operation group below so you can start receiving tasks:\n\nNB: All the help requests will be send to the group, so you must join the group to receive tasks.", {
                 parse_mode: "Markdown",
                 ...Markup.inlineKeyboard([
-                    [Markup.button.url("🚨 Join Help Group", process.env.HELP_GROUP_LINK)],
-                    [Markup.button.url("🛒 Join Shop Group", process.env.SHOP_GROUP_LINK)]
+                    [Markup.button.url("🚨 Join Help Group", helpLink)]
                 ])
             });
         }
