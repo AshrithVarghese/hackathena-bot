@@ -256,7 +256,7 @@ bot.action(/^accept_help_(.+)$/, async (ctx) => {
     const { data: team } = await supabase.from("teams").select("telegram_id").eq("id", req.team_id).single();
 
     await ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n⏳ *Accepted by ${helper.name}*`, {
-        parse_mode: "Markdown", ...Markup.inlineKeyboard([Markup.button.callback("✅ Issue Resolved", `resolve_help_${req.id}`)])
+        parse_mode: "Markdown", ...Markup.inlineKeyboard([Markup.button.callback("Mark the Issue as Resolved", `resolve_help_${req.id}`)])
     });
     
     if (team?.telegram_id) bot.telegram.sendMessage(team.telegram_id, `✅ *${helper.name}* is coming to help you!`, { parse_mode: "Markdown" });
