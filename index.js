@@ -77,7 +77,7 @@ bot.command("register_team", (ctx) => {
 
 bot.command("register_helper", (ctx) => {
     ctx.session = { step: "helper_name" };
-    ctx.reply("Enter your Helper Name:", Markup.removeKeyboard());
+    ctx.reply("Welcome to the Helper Registration!\n\nEnter your Name:", Markup.removeKeyboard());
 });
 
 bot.command("help", async (ctx) => {
